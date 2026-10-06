@@ -1,0 +1,17 @@
+[project]
+name = "03-lab1"
+version = "0.1.0"
+description = "Projet Storage S3"
+readme = "README.md"
+authors = [
+    { name = "j-hogommat-ece", email = "julien.hogommat@edu.ece.fr" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+03-lab1 = "03_lab1:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
