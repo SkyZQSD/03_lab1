@@ -1,0 +1,16 @@
+seeds:
+  - name: zip_code_ranges
+    description: >
+      Reference data, one row per state, territory or military region, with the
+      range of valid ZIP codes. Generated from the Faker en_US provider used by the
+      dataset generators (states_postcode), plus the AA/AE/AP military ranges.
+    config:
+      column_types:
+        state_code: varchar
+        zip_min: integer
+        zip_max: integer
+    columns:
+      - name: state_code
+        data_tests:
+          - unique
+          - not_null

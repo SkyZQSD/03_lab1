@@ -5,3 +5,10 @@
 __pycache__/*.csv
 *.duckdb
 init.sql
+target/
+dbt_packages/
+logs/
+*.duckdb
+
+# dbt seeds are reference data and must be versioned
+!lab_medallion/seeds/*.csv

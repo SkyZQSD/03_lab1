@@ -1,0 +1,69 @@
+models:
+  - name: stg_users
+    description: One row per user, typed, with the address split into its components.
+    columns:
+      - name: user_id
+        description: Identifier of the user.
+        data_tests:
+          - unique
+          - not_null
+      - name: email
+        data_tests:
+          - unique
+          - not_null
+      - name: sex
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["F", "M"]
+      - name: state
+        description: Two letters code of the state, territory or military region.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('states')
+                field: code
+
+      - name: username_normalized
+        description: Username without leading/trailing whitespace, in lowercase.
+        data_tests:
+          - not_null
+      - name: birthdate
+        description: Birthdate of the user, NULL when it is later than the first order of the user.
+      - name: birthdate_is_valid
+        description: True when the original birthdate passed the validation (not later than the first order).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+                quote: false
+      - name: zip_code
+        description: Five digits ZIP code, checked against the state by assert_zip_code_matches_state.
+
+  - name: stg_orders
+    description: One row per order, typed and deduplicated.
+    columns:
+      - name: order_id
+        data_tests:
+          - unique
+          - not_null
+      - name: user_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+      - name: quantity
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+      - name: product
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["bread", "brioche", "cookie", "croissant", "donut", "drink"]
