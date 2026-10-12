@@ -1,0 +1,24 @@
+nohup: ignoring input
+WARNING: Using incubator modules: jdk.incubator.vector
+:: loading settings :: url = jar:file:/usr/local/lib/spark/jars/ivy-2.5.3.jar!/org/apache/ivy/core/settings/ivysettings.xml
+Ivy Default Cache set to: /home/onyxia/.ivy2.5.2/cache
+The jars for the packages stored in: /home/onyxia/.ivy2.5.2/jars
+org.apache.iceberg#iceberg-spark-runtime-4.1_2.13 added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-27bc7330-8e28-4d57-8243-7cec7349bdb7;1.0
+	confs: [default]
+	found org.apache.iceberg#iceberg-spark-runtime-4.1_2.13;1.11.0 in central
+downloading https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-4.1_2.13/1.11.0/iceberg-spark-runtime-4.1_2.13-1.11.0.jar ...
+	[SUCCESSFUL ] org.apache.iceberg#iceberg-spark-runtime-4.1_2.13;1.11.0!iceberg-spark-runtime-4.1_2.13.jar (1644ms)
+:: resolution report :: resolve 1105ms :: artifacts dl 1663ms
+	:: modules in use:
+	org.apache.iceberg#iceberg-spark-runtime-4.1_2.13;1.11.0 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   1   |   1   |   1   |   0   ||   1   |   1   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-27bc7330-8e28-4d57-8243-7cec7349bdb7
+	confs: [default]
+	1 artifacts copied, 0 already retrieved (46835kB/47ms)
+[Stage 2:>                                                          (0 + 1) / 1]                                                                                [Stage 6:>                                                          (0 + 1) / 1]                                                                                [Stage 7:=============================>                             (1 + 1) / 2]                                                                                [Stage 13:=============================>                            (1 + 1) / 2]                                                                                [Stage 67:>                                                         (0 + 1) / 1]                                                                                [Stage 71:>                                                         (0 + 1) / 1]                                                                                [Stage 81:>                                                         (0 + 1) / 1]                                                                                [Stage 86:>                                                         (0 + 1) / 1]                                                                                
