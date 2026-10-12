@@ -1,0 +1,207 @@
+
+=== SESSION ===
+<pyspark.sql.session.SparkSession object at 0x7c7e4bed6510> version 4.1.1 parallelism 4
+startup s 17.7
+
+=== BRONZE ===
+root
+ |-- uuid: string (nullable = true)
+ |-- username: string (nullable = true)
+ |-- name: string (nullable = true)
+ |-- sex: string (nullable = true)
+ |-- address: string (nullable = true)
+ |-- mail: string (nullable = true)
+ |-- birthdate: date (nullable = true)
+
+root
+ |-- uuid: string (nullable = true)
+ |-- user_uuid: string (nullable = true)
+ |-- date: timestamp (nullable = true)
+ |-- quantity: integer (nullable = true)
+ |-- product: string (nullable = true)
+
++------------------------------------+--------------+--------------+---+---------------------------------------------+-----------------------+----------+
+|uuid                                |username      |name          |sex|address                                      |mail                   |birthdate |
++------------------------------------+--------------+--------------+---+---------------------------------------------+-----------------------+----------+
+|bdd640fb-0667-4ad1-9c80-317fa3b1799d|garzaanthony  |Charles Garcia|M  |908 Jennifer Squares\nRobinsonshire, KY 01352|helenpeterson@gmail.com|1935-09-28|
+|17be3111-1a2a-43ed-962b-0f79c37459ee|blairamanda   |Ryan Munoz    |M  |Unit 6184 Box 9593\nDPO AP 09617             |stanleykendra@gmail.com|2009-12-24|
+|47294739-614f-43d7-99db-3ad0ddd1dfb2|elizabethmiles|Jacob Wood    |M  |283 Steven Groves\nLake Mark, WI 07832       |lydiatrujillo@yahoo.com|1941-10-27|
++------------------------------------+--------------+--------------+---+---------------------------------------------+-----------------------+----------+
+only showing top 3 rows
++---------------------------------------------+
+|address                                      |
++---------------------------------------------+
+|908 Jennifer Squares\nRobinsonshire, KY 01352|
+|Unit 6184 Box 9593\nDPO AP 09617             |
+|283 Steven Groves\nLake Mark, WI 07832       |
++---------------------------------------------+
+only showing top 3 rows
+users_bronze 50 orders_bronze 2829
+
+=== STG_USERS ===
++------------------------------------+--------------+------------------+---+-----------------------+----------+---------------------+--------------+-----+--------+
+|user_id                             |username      |name              |sex|email                  |birthdate |street               |city          |state|zip_code|
++------------------------------------+--------------+------------------+---+-----------------------+----------+---------------------+--------------+-----+--------+
+|bdd640fb-0667-4ad1-9c80-317fa3b1799d|garzaanthony  |Charles Garcia    |M  |helenpeterson@gmail.com|1935-09-28|908 Jennifer Squares |Robinsonshire |KY   |01352   |
+|17be3111-1a2a-43ed-962b-0f79c37459ee|blairamanda   |Ryan Munoz        |M  |stanleykendra@gmail.com|2009-12-24|Unit 6184 Box 9593   |NULL          |AP   |09617   |
+|47294739-614f-43d7-99db-3ad0ddd1dfb2|elizabethmiles|Jacob Wood        |M  |lydiatrujillo@yahoo.com|1941-10-27|283 Steven Groves    |Lake Mark     |WI   |07832   |
+|9132b63e-f162-47e4-a9c3-49e03602f8ac|ithomas       |Jonathan Wilkerson|M  |cruzcaitlin@yahoo.com  |1972-02-22|969 Cox Dam Suite 101|Lake Ernest   |TX   |55834   |
+|f143262f-dc5c-4eed-8da0-365bf89897b9|kayla51       |Ashley Dyer       |F  |georgetracy@gmail.com  |2018-07-16|0482 Monica Hills    |East Nathaniel|GA   |71198   |
++------------------------------------+--------------+------------------+---+-----------------------+----------+---------------------+--------------+-----+--------+
+only showing top 5 rows
++---------+-----------+---------+-----------+
+|city_null|state_empty|zip_empty|street_null|
++---------+-----------+---------+-----------+
+|        6|          0|        0|          0|
++---------+-----------+---------+-----------+
+
+
+=== STG_ORDERS ===
+Original: 2829
+With duplicates: 2832
++------------------------------------+-----+
+|order_id                            |count|
++------------------------------------+-----+
+|2339ba19-2563-4cc3-8a97-ebf555d596af|2    |
+|b49e04cc-c243-49e7-a387-eaf6d4c3a832|2    |
+|41843b03-04dd-4054-9448-23f7e7e646c7|2    |
++------------------------------------+-----+
+
+After deduplication: 2829
++--------+-----+
+|order_id|count|
++--------+-----+
++--------+-----+
+
+
+=== SPARK SQL ===
++------------------------------------+------------------------------------+--------------------------+--------+---------+
+|order_id                            |user_id                             |ordered_at                |quantity|product  |
++------------------------------------+------------------------------------+--------------------------+--------+---------+
+|00060d5a-02b3-4948-8db6-f47527dd1ac4|f53d4330-cdda-44ba-ad06-e8cf3805f907|2020-01-28 12:31:23.938466|2       |cookie   |
+|0011be30-e268-492f-9b75-7ed19dca71ef|5f733a3e-5d28-4aa4-a8a3-97799c1c3517|2020-04-18 22:51:09.653035|5       |bread    |
+|002394e2-2ad9-4682-b8da-5a79a72edd5f|90164161-cfa7-41cd-a631-d00b26d794d3|2020-02-24 01:03:36.630111|4       |cookie   |
+|0041f5d4-9549-4631-b94c-eef2f833dfa7|aab612c9-415d-474a-b5a6-69814104a8b5|2020-03-17 18:29:17.906428|2       |croissant|
+|00684d9c-d2bf-4c31-805f-6a69570078c1|97fa7f04-8363-4007-9cae-9610c72c1fe3|2020-03-30 13:36:38.039485|4       |bread    |
++------------------------------------+------------------------------------+--------------------------+--------+---------+
+only showing top 5 rows
+asserts OK 2829 2829
+sameSemantics(DataFrame, SQL): True
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Project [order_id#156, user_id#157, ordered_at#158, quantity#10, product#160]
+   +- Filter (rn#244 = 1)
+      +- Window [row_number() windowspecdefinition(order_id#156, ordered_at#158 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#244], [order_id#156], [ordered_at#158 DESC NULLS LAST]
+         +- WindowGroupLimit [order_id#156], [ordered_at#158 DESC NULLS LAST], row_number(), 1, Final
+            +- Sort [order_id#156 ASC NULLS FIRST, ordered_at#158 DESC NULLS LAST], false, 0
+               +- Exchange hashpartitioning(order_id#156, 200), ENSURE_REQUIREMENTS, [plan_id=2042]
+                  +- WindowGroupLimit [order_id#156], [ordered_at#158 DESC NULLS LAST], row_number(), 1, Partial
+                     +- Sort [order_id#156 ASC NULLS FIRST, ordered_at#158 DESC NULLS LAST], false, 0
+                        +- Project [uuid#7 AS order_id#156, user_uuid#8 AS user_id#157, date#9 AS ordered_at#158, quantity#10, lower(trim(product#11, None)) AS product#160]
+                           +- FileScan csv [uuid#7,user_uuid#8,date#9,quantity#10,product#11] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[s3a://user-j-hogommat-ece/bronze/orders.csv], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<uuid:string,user_uuid:string,date:timestamp,quantity:int,product:string>
+
+
++-----+-----+------------+
+|state|users|missing_city|
++-----+-----+------------+
+|   AE|    3|           3|
+|   FM|    3|           0|
+|   NJ|    2|           0|
+|   VT|    2|           0|
+|   DE|    2|           0|
+|   VI|    2|           0|
+|   NM|    2|           0|
+|   PA|    2|           0|
+|   TX|    2|           0|
+|   AP|    2|           2|
++-----+-----+------------+
+only showing top 10 rows
+distinct states: 37 | total missing_city: 6
++------------------+-----+--------+
+|street            |state|zip_code|
++------------------+-----+--------+
+|Unit 6184 Box 9593|AP   |09617   |
+|PSC 2967, Box 1756|AA   |42582   |
+|Unit 4647 Box 4367|AE   |31592   |
+|Unit 7139 Box 0053|AE   |74501   |
+|Unit 6617 Box 7115|AP   |19943   |
+|PSC 7506, Box 0685|AE   |51116   |
++------------------+-----+--------+
+
+
+=== PARQUET ===
+partitions stg_users: 1 stg_orders: 1
+silver build + parquet write s 37.4
+parquet asserts OK 50 2829
+root
+ |-- order_id: string (nullable = true)
+ |-- user_id: string (nullable = true)
+ |-- ordered_at: timestamp (nullable = true)
+ |-- quantity: integer (nullable = true)
+ |-- product: string (nullable = true)
+
+
+=== ICEBERG ===
++-------------------+---------+-----------------------+
+|snapshot_id        |operation|committed_at           |
++-------------------+---------+-----------------------+
+|1786602196423604874|overwrite|2026-10-12 14:22:31.107|
++-------------------+---------+-----------------------+
+
++--------------------------------------------------------------------------------------------------------------------+-----------+------------+------------------+
+|file_path                                                                                                           |file_format|record_count|file_size_in_bytes|
++--------------------------------------------------------------------------------------------------------------------+-----------+------------+------------------+
+|s3a://user-j-hogommat-ece/warehouse/silver/orders/data/00000-87-ff40bbc0-63d3-42c9-b425-da6184f38401-0-00001.parquet|PARQUET    |2829        |84055             |
++--------------------------------------------------------------------------------------------------------------------+-----------+------------+------------------+
+
+iceberg asserts OK 50 2829
++----------+---------+-------+
+|col_name  |data_type|comment|
++----------+---------+-------+
+|order_id  |string   |NULL   |
+|user_id   |string   |NULL   |
+|ordered_at|timestamp|NULL   |
+|quantity  |int      |NULL   |
+|product   |string   |NULL   |
++----------+---------+-------+
+
+
+=== EX1 birthdate_is_valid ===
+rows DF 50 rows SQL 50 differences 0
++------------------+-----+
+|birthdate_is_valid|count|
++------------------+-----+
+|              true|   45|
+|             false|    5|
++------------------+-----+
+
++--------------+----------+--------------------------+
+|username      |birthdate |first_order_at            |
++--------------+----------+--------------------------+
+|ronaldstephens|2022-05-07|2020-02-26 09:46:06.054277|
+|nicolejohnson |2022-12-04|2020-01-20 04:25:18.263357|
+|cgrimes       |2024-07-16|2020-03-10 15:24:50.199645|
+|charleslandry |2025-12-01|2020-03-17 18:29:17.906428|
+|dayderek      |2026-10-03|2020-02-03 12:36:43.393482|
++--------------+----------+--------------------------+
+
+
+=== EX3 cache ===
+users_bronze.count() no cache: 50 in 372 ms
+orders_bronze.count() no cache: 2829 in 224 ms
+users_bronze.count() 1st (fills cache): 50 in 630 ms
+orders_bronze.count() 1st (fills cache): 2829 in 408 ms
+users_bronze.count() cached: 50 in 170 ms
+orders_bronze.count() cached: 2829 in 163 ms
+Storage: FileScan csv [uuid#0,username#1,name#2,sex#3,address#4,mail#5,birthdat | partitions 1 | memory 9416 B | Disk Memory Deserialized 1x Replicated
+Storage: FileScan csv [uuid#7,user_uuid#8,date#9,quantity#10,product#11] Batche | partitions 1 | memory 147856 B | Disk Memory Deserialized 1x Replicated
+Stage 247 $anonfun$withThreadLocalCaptured$2 at Co | input 0 B | tasks 1
+Stage 246 $anonfun$withThreadLocalCaptured$2 at Co | input 0 B | tasks 1
+Stage 245 $anonfun$withThreadLocalCaptured$2 at Co | input 147856 B | tasks 1
+Stage 244 $anonfun$withThreadLocalCaptured$2 at Co | input 0 B | tasks 1
+Stage 243 $anonfun$withThreadLocalCaptured$2 at Co | input 0 B | tasks 1
+Stage 242 $anonfun$withThreadLocalCaptured$2 at Co | input 9416 B | tasks 1
+Stage 241 $anonfun$withThreadLocalCaptured$2 at Co | input 0 B | tasks 1
+Stage 240 $anonfun$withThreadLocalCaptured$2 at Co | input 0 B | tasks 1
+
+=== EX2 UDF vs pandas_udf vs regexp_extract ===

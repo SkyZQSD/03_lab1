@@ -1,0 +1,41 @@
+[00m┌─────────┬────────┬──────────┐
+│ engine  │ orders │ quantity │
+│ varchar │ int64  │  int128  │
+├─────────┼────────┼──────────┤
+│ dbt     │   2829 │     8615 │
+│ spark   │   2829 │     8615 │
+└─────────┴────────┴──────────┘
+[00m┌─────────┬───────┐
+│ engine  │ users │
+│ varchar │ int64 │
+├─────────┼───────┤
+│ dbt     │    50 │
+│ spark   │    50 │
+└─────────┴───────┘
+[00m[90m┌────────────────────────────────────────────────────────┐[00m[90m
+[00m[90m│ [00m[1ms3://user-j-hogommat-ece/silver/dbt/stg_orders.parquet[00m[90m │[00m[90m
+[00m[90m│                                                        │[00m[90m
+[00m[90m│ [00morder_id[90m                      [00m[90muuid[00m[90m                     [00m[90m│[00m[90m
+[00m[90m│ [00muser_id[90m                       [00m[90muuid[00m[90m                     [00m[90m│[00m[90m
+[00m[90m│ [00mordered_at[90m                    [00m[90mtimestamp with time zone[00m[90m [00m[90m│[00m[90m
+[00m[90m│ [00mquantity[90m                      [00m[90minteger[00m[90m                  [00m[90m│[00m[90m
+[00m[90m│ [00mproduct[90m                       [00m[90mvarchar[00m[90m                  [00m[90m│[00m[90m
+[00m[90m└────────────────────────────────────────────────────────┘[00m[90m
+[00m[90m┌────────────────────────────────────────────────────────────────┐[00m[90m
+[00m[90m│ [00m[1ms3://user-j-hogommat-ece/silver/spark/orders.parquet/*.parquet[00m[90m │[00m[90m
+[00m[90m│                                                                │[00m[90m
+[00m[90m│ [00morder_id[90m                                             [00m[90mvarchar[00m[90m   [00m[90m│[00m[90m
+[00m[90m│ [00muser_id[90m                                              [00m[90mvarchar[00m[90m   [00m[90m│[00m[90m
+[00m[90m│ [00mordered_at[90m                                           [00m[90mtimestamp[00m[90m [00m[90m│[00m[90m
+[00m[90m│ [00mquantity[90m                                             [00m[90minteger[00m[90m   [00m[90m│[00m[90m
+[00m[90m│ [00mproduct[90m                                              [00m[90mvarchar[00m[90m   [00m[90m│[00m[90m
+[00m[90m└────────────────────────────────────────────────────────────────┘[00m[90m
+[00m
+== dbt/stg_orders.parquet
+[00mcolumn_name|column_type order_id|UUID user_id|UUID ordered_at|TIMESTAMP WITH TIME ZONE quantity|INTEGER product|VARCHAR 
+== spark/orders.parquet/*.parquet
+[00mcolumn_name|column_type order_id|VARCHAR user_id|VARCHAR ordered_at|TIMESTAMP quantity|INTEGER product|VARCHAR 
+== dbt/stg_users.parquet
+[00mcolumn_name|column_type user_id|UUID username|VARCHAR username_normalized|VARCHAR name|VARCHAR sex|VARCHAR email|VARCHAR birthdate|DATE birthdate_is_valid|BOOLEAN street|VARCHAR city|VARCHAR state|VARCHAR zip_code|VARCHAR 
+== spark/users.parquet/*.parquet
+[00mcolumn_name|column_type user_id|VARCHAR username|VARCHAR name|VARCHAR sex|VARCHAR email|VARCHAR birthdate|DATE street|VARCHAR city|VARCHAR state|VARCHAR zip_code|VARCHAR 

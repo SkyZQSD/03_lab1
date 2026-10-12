@@ -1,0 +1,48 @@
+
+=== EX2 UDF vs pandas_udf vs regexp_extract ===
+same result udf: True pandas_udf: True
+regexp_extract: best 119.0 ms per run (5 runs x 3)
+python udf: best 160.1 ms per run (5 runs x 3)
+pandas_udf: best 140.7 ms per run (5 runs x 3)
+== Physical Plan ==
+*(1) Project [pythonUDF0#7818 AS zip#243]
++- BatchEvalPython [zip_udf(address#4)#242], [pythonUDF0#7818]
+   +- InMemoryTableScan [address#4]
+         +- InMemoryRelation [uuid#0, username#1, name#2, sex#3, address#4, mail#5, birthdate#6], StorageLevel(disk, memory, deserialized, 1 replicas)
+               +- FileScan csv [uuid#0,username#1,name#2,sex#3,address#4,mail#5,birthdate#6] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[s3a://user-j-hogommat-ece/bronze/users.csv], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<uuid:string,username:string,name:string,sex:string,address:string,mail:string,birthdate:date>
+
+
+== Physical Plan ==
+*(1) Project [pythonUDF0#7924 AS zip#245]
++- ArrowEvalPython [zip_pandas_udf(address#4)#244], [pythonUDF0#7924], 200
+   +- InMemoryTableScan [address#4]
+         +- InMemoryRelation [uuid#0, username#1, name#2, sex#3, address#4, mail#5, birthdate#6], StorageLevel(disk, memory, deserialized, 1 replicas)
+               +- FileScan csv [uuid#0,username#1,name#2,sex#3,address#4,mail#5,birthdate#6] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[s3a://user-j-hogommat-ece/bronze/users.csv], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<uuid:string,username:string,name:string,sex:string,address:string,mail:string,birthdate:date>
+
+
+
+=== EX4 Iceberg append + time travel ===
+count before append: 2829
++-------------------+-------------------+---------+-----------------------+
+|snapshot_id        |parent_id          |operation|committed_at           |
++-------------------+-------------------+---------+-----------------------+
+|1786602196423604874|NULL               |overwrite|2026-10-12 14:22:31.107|
+|8198179109447365777|1786602196423604874|append   |2026-10-12 14:25:46.944|
++-------------------+-------------------+---------+-----------------------+
+
+current count: 2830
++--------------------+
+|orders_before_append|
++--------------------+
+|                2829|
++--------------------+
+
++-----------------------+-------------------+-------------------+
+|made_current_at        |snapshot_id        |is_current_ancestor|
++-----------------------+-------------------+-------------------+
+|2026-10-12 14:22:31.107|1786602196423604874|true               |
+|2026-10-12 14:25:46.944|8198179109447365777|true               |
++-----------------------+-------------------+-------------------+
+
+parquet copy before append: 2829
+parquet copy after append: 2830 (no previous version can be read)
