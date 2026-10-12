@@ -1,0 +1,162 @@
+Spark 4.1.1 | UI: http://vscode-pyspark-823193-0.vscode-pyspark-823193.user-j-hogommat-ece.svc.cluster.local:4040 | defaultParallelism: 2
+
+======================================================================
+RDD creation and partitions
+======================================================================
+users_lines partitions : 2
+orders_lines partitions: 2
+sc.defaultMinPartitions: 2
+orders_repartitioned   : 8
+orders_coalesced       : 2
+--- lineage repartition(8) (note the ShuffledRDD):
+(8) MapPartitionsRDD[8] at coalesce at NativeMethodAccessorImpl.java:0 []
+ |  CoalescedRDD[7] at coalesce at NativeMethodAccessorImpl.java:0 []
+ |  ShuffledRDD[6] at coalesce at NativeMethodAccessorImpl.java:0 []
+ +-(2) MapPartitionsRDD[5] at coalesce at NativeMethodAccessorImpl.java:0 []
+    |  PythonRDD[4] at RDD at PythonRDD.scala:58 []
+    |  orders.csv MapPartitionsRDD[3] at textFile at NativeMethodAccessorImpl.java:0 []
+    |  orders.csv HadoopRDD[2] at textFile at NativeMethodAccessorImpl.java:0 []
+--- lineage coalesce(2) (no new shuffle, CoalescedRDD):
+(1) CoalescedRDD[10] at coalesce at NativeMethodAccessorImpl.java:0 []
+ |  orders.csv MapPartitionsRDD[3] at textFile at NativeMethodAccessorImpl.java:0 []
+ |  orders.csv HadoopRDD[2] at textFile at NativeMethodAccessorImpl.java:0 []
+
+======================================================================
+Lazy evaluation and lineage
+======================================================================
+header: uuid,user_uuid,date,quantity,product
+(2) PythonRDD[12] at RDD at PythonRDD.scala:58 []
+ |  orders.csv MapPartitionsRDD[3] at textFile at NativeMethodAccessorImpl.java:0 []
+ |  orders.csv HadoopRDD[2] at textFile at NativeMethodAccessorImpl.java:0 []
+count #1: 2829
+count #2: 2829
+
+======================================================================
+The cost of no schema: the multiline address
+======================================================================
+uuid,username,name,sex,address,mail,birthdate
+bdd640fb-0667-4ad1-9c80-317fa3b1799d,garzaanthony,Charles Garcia,M,"908 Jennifer Squares
+Robinsonshire, KY 01352",helenpeterson@gmail.com,1935-09-28
+17be3111-1a2a-43ed-962b-0f79c37459ee,blairamanda,Ryan Munoz,M,"Unit 6184 Box 9593
+DPO AP 09617",stanleykendra@gmail.com,2009-12-24
+47294739-614f-43d7-99db-3ad0ddd1dfb2,elizabethmiles,Jacob Wood,M,"283 Steven Groves
+users_lines.count(): 101
+users_records.count(): 50
+DataFrame multiLine=True count: 50
+
+======================================================================
+Manual parsing of orders
+======================================================================
+{'order_id': '2339ba19-2563-4cc3-8a97-ebf555d596af', 'user_id': 'bdd640fb-0667-4ad1-9c80-317fa3b1799d', 'date': '2020-01-01 00:02:17.891488+00:00', 'quantity': 4, 'product': 'drink'}
+{'order_id': 'b49e04cc-c243-49e7-a387-eaf6d4c3a832', 'user_id': 'bdd640fb-0667-4ad1-9c80-317fa3b1799d', 'date': '2020-01-01 01:28:08.796458+00:00', 'quantity': 5, 'product': 'bread'}
+{'order_id': '41843b03-04dd-4054-9448-23f7e7e646c7', 'user_id': 'bdd640fb-0667-4ad1-9c80-317fa3b1799d', 'date': '2020-01-01 02:12:56.357080+00:00', 'quantity': 2, 'product': 'donut'}
+transformation built fine (lazy): PythonRDD[32] at RDD at PythonRDD.scala:58
+Fails only at the action -> Py4JJavaError | ['ValueError: too many values to unpack (expected 5)']
+
+======================================================================
+Key-value RDDs: total quantity per user
+======================================================================
+[('f143262f-dc5c-4eed-8da0-365bf89897b9', 12), ('969b6662-0562-4059-968c-c69b1064005c', 40), ('ce9e1a11-fcbb-4e59-bbdd-cf7c9c96e9ec', 253), ('5563f616-00e8-4ece-8b49-452d46d483f3', 57), ('f94d6204-6808-493f-9fed-2c43e256a6dc', 175)]
+[('f143262f-dc5c-4eed-8da0-365bf89897b9', 12), ('969b6662-0562-4059-968c-c69b1064005c', 40), ('ce9e1a11-fcbb-4e59-bbdd-cf7c9c96e9ec', 253), ('5563f616-00e8-4ece-8b49-452d46d483f3', 57), ('f94d6204-6808-493f-9fed-2c43e256a6dc', 175)]
+same result: True
+
+======================================================================
+Manual deduplication
+======================================================================
+orders_rdd.count(), orders_dedup.count(): 2829 2829
+
+======================================================================
+Joining orders with users
+======================================================================
+('f143262f-dc5c-4eed-8da0-365bf89897b9', ({'order_id': 'f1f7d904-1307-4157-98c1-28e7d6cd3155', 'user_id': 'f143262f-dc5c-4eed-8da0-365bf89897b9', 'date': '2020-01-07 17:49:04.785279+00:00', 'quantity': 1, 'product': 'bread'}, 'kayla51'))
+('f143262f-dc5c-4eed-8da0-365bf89897b9', ({'order_id': 'a175a9c3-d7b1-42a9-a332-a50e6992896e', 'user_id': 'f143262f-dc5c-4eed-8da0-365bf89897b9', 'date': '2020-01-07 18:13:53.160212+00:00', 'quantity': 2, 'product': 'bread'}, 'kayla51'))
+('f143262f-dc5c-4eed-8da0-365bf89897b9', ({'order_id': '5f8a14bd-74bd-4c93-8177-b66137fe032c', 'user_id': 'f143262f-dc5c-4eed-8da0-365bf89897b9', 'date': '2020-01-07 19:03:37.620428+00:00', 'quantity': 5, 'product': 'croissant'}, 'kayla51'))
+enriched.count(): 2829 | orders_kv.count(): 2829
+leftOuterJoin count: 2829 | with no user: 0
+--- lineage of a co-partitioned join (no extra shuffle above the partitionBy):
+(8) PythonRDD[81] at RDD at PythonRDD.scala:58 []
+ |  PartitionerAwareUnionRDD[80] at union at NativeMethodAccessorImpl.java:0 []
+ |  PythonRDD[78] at RDD at PythonRDD.scala:58 []
+ |  MapPartitionsRDD[77] at mapPartitions at PythonRDD.scala:170 []
+ |  ShuffledRDD[76] at partitionBy at NativeMethodAccessorImpl.java:0 []
+ +-(2) PairwiseRDD[75] at partitionBy at <string>:136 []
+    |  PythonRDD[74] at partitionBy at <string>:136 []
+    |  PythonRDD[29] at RDD at PythonRDD.scala:58 []
+    |      CachedPartitions: 2; MemorySize: 168.0 KiB; DiskSize: 0.0 B
+    |  orders.csv MapPartitionsRDD[3] at textFile at NativeMethodAccessorImpl.java:0 []
+    |  orders.csv HadoopRDD[2] at textFile at NativeMethodAccessorImpl.java:0 []
+ |  PythonRDD[79] at RDD at PythonRDD.scala:58 []
+ |  MapPartitionsRDD[73] at mapPartitions at PythonRDD.scala:170 []
+ |  ShuffledRDD[72] at partitionBy at NativeMethodAccessorImpl.java:0 []
+ +-(2) PairwiseRDD[71] at partitionBy at <string>:135 []
+    |  PythonRDD[70] at partitionBy at <string>:135 []
+    |  users.csv MapPartitionsRDD[1] at textFile at NativeMethodAccessorImpl.java:0 []
+    |  users.csv HadoopRDD[0] at textFile at NativeMethodAccessorImpl.java:0 []
+
+======================================================================
+Exercise 1: aggregateByKey -> (order_count, total_quantity), average
+======================================================================
+f143262f-dc5c-4eed-8da0-365bf89897b9 (4, 12)
+969b6662-0562-4059-968c-c69b1064005c (12, 40)
+ce9e1a11-fcbb-4e59-bbdd-cf7c9c96e9ec (85, 253)
+5563f616-00e8-4ece-8b49-452d46d483f3 (21, 57)
+f94d6204-6808-493f-9fed-2c43e256a6dc (49, 175)
+f143262f-dc5c-4eed-8da0-365bf89897b9 3.0
+969b6662-0562-4059-968c-c69b1064005c 3.333
+ce9e1a11-fcbb-4e59-bbdd-cf7c9c96e9ec 2.976
+5563f616-00e8-4ece-8b49-452d46d483f3 2.714
+f94d6204-6808-493f-9fed-2c43e256a6dc 3.571
+totals consistent with reduceByKey: True
+
+======================================================================
+Exercise 2: fake user_id + leftOuterJoin
+======================================================================
+orders without matching user: 1
+[('ffffffff-ffff-ffff-ffff-ffffffffffff', ({'order_id': '00000000-0000-0000-0000-000000000000', 'user_id': 'ffffffff-ffff-ffff-ffff-ffffffffffff', 'date': '2026-10-12 00:00:00+00:00', 'quantity': 1, 'product': 'ghost'}, None))]
+
+======================================================================
+Exercise 3: same aggregation with the DataFrame API
+======================================================================
++------------------------------------+-------------+
+|user_id                             |sum(quantity)|
++------------------------------------+-------------+
+|d47d577b-fa5a-41ca-859d-d55d4b943e30|80           |
+|0b2f6d5c-700b-4d5f-b89f-72f32a60c652|190          |
+|d9e604b3-8412-4335-988c-656db61e5fdb|184          |
+|97fa7f04-8363-4007-9cae-9610c72c1fe3|285          |
+|2051acef-097a-4e10-b6fe-bc0e7ecddbaf|301          |
++------------------------------------+-------------+
+only showing top 5 rows
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- HashAggregate(keys=[user_id#41], functions=[sum(quantity#38)])
+   +- Exchange hashpartitioning(user_id#41, 200), ENSURE_REQUIREMENTS, [plan_id=116]
+      +- HashAggregate(keys=[user_id#41], functions=[partial_sum(quantity#38)])
+         +- Project [user_uuid#36 AS user_id#41, quantity#38]
+            +- FileScan csv [user_uuid#36,quantity#38] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/onyxia/work/03_lab1/orders.csv], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<user_uuid:string,quantity:int>
+
+
+--- RDD lineage:
+(2) PythonRDD[43] at collect at <string>:98 []
+ |  MapPartitionsRDD[36] at mapPartitions at PythonRDD.scala:170 []
+ |  ShuffledRDD[35] at partitionBy at NativeMethodAccessorImpl.java:0 []
+ +-(2) PairwiseRDD[34] at reduceByKey at <string>:87 []
+    |  PythonRDD[33] at reduceByKey at <string>:87 []
+    |  PythonRDD[29] at RDD at PythonRDD.scala:58 []
+    |      CachedPartitions: 2; MemorySize: 168.0 KiB; DiskSize: 0.0 B
+    |  orders.csv MapPartitionsRDD[3] at textFile at NativeMethodAccessorImpl.java:0 []
+    |  orders.csv HadoopRDD[2] at textFile at NativeMethodAccessorImpl.java:0 []
+
+======================================================================
+Exercise 4: timings with and without cache
+======================================================================
+CACHED   orders_rdd.count()                       77.6 ms  -> 2829
+CACHED   user_quantity.count()                   170.4 ms  -> 50
+NO CACHE orders_rdd_nocache.count()              144.8 ms  -> 2829
+NO CACHE user_quantity_nocache.count()           331.0 ms  -> 50
+orders_rdd.is_cached: True | storage level: Memory Serialized 1x Replicated
+orders_rdd_nocache.is_cached: False
+
+======================================================================
+DONE - session kept alive, Spark UI on http://localhost:4040 (Jobs / Stages / Storage)
+======================================================================
